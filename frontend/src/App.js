@@ -375,6 +375,181 @@ const App = () => {
     return teachingStaff.filter(staff => staff.departmentId === departmentId);
   };
 
+  // Course Assignment Functions
+  const getStaffName = (staffId) => {
+    const staff = teachingStaff.find(s => s.id === staffId);
+    return staff ? staff.name : 'Unassigned';
+  };
+
+  const getCoursesByDepartment = (departmentId) => {
+    return courses.filter(course => course.departmentId === departmentId);
+  };
+
+  const getUnassignedCoursesByDepartment = (departmentId) => {
+    return courses.filter(course => course.departmentId === departmentId && !course.teaching_staff_id);
+  };
+
+  const getStaffCourses = (staffId) => {
+    return courses.filter(course => course.teaching_staff_id === staffId);
+  };
+
+  const assignCourse = async (courseId, staffId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Check for time conflicts
+      const course = courses.find(c => c.id === courseId);
+      const existingCourses = getStaffCourses(staffId);
+      const conflict = existingCourses.find(c => 
+        c.schedule_day === course.schedule_day && c.schedule_time === course.schedule_time
+      );
+      
+      if (conflict) {
+        throw new Error(`Time conflict with ${conflict.code} - ${conflict.name}`);
+      }
+
+      // Update local state (In production, this would be an API call)
+      setCourses(courses.map(course => 
+        course.id === courseId 
+          ? { ...course, teaching_staff_id: staffId }
+          : course
+      ));
+      
+      setShowCourseAssignmentModal(false);
+      alert('Course assigned successfully!');
+    } catch (err) {
+      setError(err.message);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const unassignCourse = async (courseId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Update local state (In production, this would be an API call)
+      setCourses(courses.map(course => 
+        course.id === courseId 
+          ? { ...course, teaching_staff_id: null }
+          : course
+      ));
+      
+      alert('Course unassigned successfully!');
+    } catch (err) {
+      setError(err.message);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const requestCourse = async (courseId, staffId, notes = '') => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const course = courses.find(c => c.id === courseId);
+      const staff = teachingStaff.find(s => s.id === staffId);
+      
+      if (course.teaching_staff_id) {
+        throw new Error('Course is already assigned to another staff member');
+      }
+      
+      // Check for existing pending request
+      const existingRequest = courseRequests.find(r => 
+        r.course_id === courseId && r.teaching_staff_id === staffId && r.status === 'pending'
+      );
+      
+      if (existingRequest) {
+        throw new Error('You already have a pending request for this course');
+      }
+      
+      const newRequest = {
+        id: `REQ${courseRequests.length + 1}`,
+        course_id: courseId,
+        teaching_staff_id: staffId,
+        department_id: staff.departmentId,
+        requested_by: staff.name,
+        status: 'pending',
+        notes: notes,
+        request_date: new Date().toISOString()
+      };
+      
+      setCourseRequests([...courseRequests, newRequest]);
+      setShowCourseRequestModal(false);
+      alert('Course request submitted successfully!');
+    } catch (err) {
+      setError(err.message);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateCourseRequest = async (requestId, status, notes = '') => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const request = courseRequests.find(r => r.id === requestId);
+      if (!request) {
+        throw new Error('Request not found');
+      }
+      
+      // If approving, assign the course
+      if (status === 'approved') {
+        const course = courses.find(c => c.id === request.course_id);
+        if (course.teaching_staff_id) {
+          throw new Error('Course is already assigned to another staff member');
+        }
+        
+        // Check for time conflicts
+        const staffCourses = getStaffCourses(request.teaching_staff_id);
+        const conflict = staffCourses.find(c => 
+          c.schedule_day === course.schedule_day && c.schedule_time === course.schedule_time
+        );
+        
+        if (conflict) {
+          throw new Error(`Cannot approve: Time conflict with ${conflict.code} - ${conflict.name}`);
+        }
+        
+        // Update course assignment
+        setCourses(courses.map(c => 
+          c.id === request.course_id 
+            ? { ...c, teaching_staff_id: request.teaching_staff_id }
+            : c
+        ));
+      }
+      
+      // Update request status
+      setCourseRequests(courseRequests.map(r => 
+        r.id === requestId 
+          ? { ...r, status: status, notes: notes }
+          : r
+      ));
+      
+      alert(`Request ${status} successfully!`);
+    } catch (err) {
+      setError(err.message);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get current user's teaching staff ID (mock function)
+  const getCurrentStaffId = () => {
+    // In production, this would come from authentication
+    if (userRole === 'Teaching Staff') {
+      return teachingStaff[0]?.id; // Mock: return first staff member
+    }
+    return null;
+  };
+
   // Filter students based on search
   const filteredStudents = students.filter(student => 
     student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
