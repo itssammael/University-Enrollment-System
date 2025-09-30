@@ -362,6 +362,218 @@ async def update_course(course_id: str, course_update: CourseUpdate):
     updated_course = await db.courses.find_one({"id": course_id})
     return Course(**updated_course)
 
+# Helper function to check time conflicts
+async def check_time_conflicts(teaching_staff_id: str, schedule_day: str, schedule_time: str, exclude_course_id: str = None):
+    """Check if a teaching staff member has conflicting schedules"""
+    query = {
+        "teaching_staff_id": teaching_staff_id,
+        "schedule_day": schedule_day,
+        "schedule_time": schedule_time
+    }
+    if exclude_course_id:
+        query["id"] = {"$ne": exclude_course_id}
+    
+    conflicting_courses = await db.courses.find(query).to_list(1000)
+    return conflicting_courses
+
+# Course Assignment endpoints
+@api_router.post("/courses/{course_id}/assign")
+async def assign_course_to_staff(course_id: str, assignment: CourseAssignment):
+    """Assign a course to teaching staff (for Chair/Secretary)"""
+    
+    # Verify course exists
+    course = await db.courses.find_one({"id": course_id})
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    
+    # Verify teaching staff exists
+    staff = await db.teaching_staff.find_one({"id": assignment.teaching_staff_id})
+    if not staff:
+        raise HTTPException(status_code=404, detail="Teaching staff member not found")
+    
+    # Verify staff is from same department as course
+    if staff["department_id"] != course["department_id"]:
+        raise HTTPException(status_code=400, detail="Teaching staff must be from the same department as the course")
+    
+    # Check for time conflicts if course has schedule
+    if course.get("schedule_day") and course.get("schedule_time"):
+        conflicts = await check_time_conflicts(
+            assignment.teaching_staff_id, 
+            course["schedule_day"], 
+            course["schedule_time"], 
+            course_id
+        )
+        if conflicts:
+            conflict_names = [f"{c['code']} - {c['name']}" for c in conflicts]
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Time conflict with existing courses: {', '.join(conflict_names)}"
+            )
+    
+    # Update course assignment
+    result = await db.courses.update_one(
+        {"id": course_id},
+        {"$set": {"teaching_staff_id": assignment.teaching_staff_id, "updated_at": datetime.utcnow()}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Course not found")
+    
+    # Return updated course
+    updated_course = await db.courses.find_one({"id": course_id})
+    return Course(**updated_course)
+
+@api_router.delete("/courses/{course_id}/unassign")
+async def unassign_course_from_staff(course_id: str):
+    """Unassign a course from teaching staff"""
+    
+    result = await db.courses.update_one(
+        {"id": course_id},
+        {"$set": {"teaching_staff_id": None, "updated_at": datetime.utcnow()}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Course not found")
+    
+    updated_course = await db.courses.find_one({"id": course_id})
+    return Course(**updated_course)
+
+# Course Request endpoints (for Teaching Staff)
+@api_router.post("/course-requests", response_model=CourseRequest)
+async def create_course_request(request: CourseRequestCreate):
+    """Create a course request by teaching staff"""
+    
+    # Verify course exists
+    course = await db.courses.find_one({"id": request.course_id})
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    
+    # Verify teaching staff exists
+    staff = await db.teaching_staff.find_one({"id": request.teaching_staff_id})
+    if not staff:
+        raise HTTPException(status_code=404, detail="Teaching staff member not found")
+    
+    # Verify staff is from same department as course
+    if staff["department_id"] != course["department_id"]:
+        raise HTTPException(status_code=400, detail="You can only request courses from your department")
+    
+    # Check if course is already assigned
+    if course.get("teaching_staff_id"):
+        raise HTTPException(status_code=400, detail="Course is already assigned to another staff member")
+    
+    # Check if there's already a pending request for this course by this staff
+    existing_request = await db.course_requests.find_one({
+        "course_id": request.course_id,
+        "teaching_staff_id": request.teaching_staff_id,
+        "status": "pending"
+    })
+    if existing_request:
+        raise HTTPException(status_code=400, detail="You already have a pending request for this course")
+    
+    request_dict = request.dict()
+    request_obj = CourseRequest(
+        **request_dict,
+        department_id=staff["department_id"],
+        requested_by=staff["name"]
+    )
+    
+    await db.course_requests.insert_one(request_obj.dict())
+    return request_obj
+
+@api_router.get("/course-requests", response_model=List[CourseRequest])
+async def get_course_requests(department_id: str = None, teaching_staff_id: str = None, status: str = None):
+    """Get course requests with optional filters"""
+    query = {}
+    if department_id:
+        query["department_id"] = department_id
+    if teaching_staff_id:
+        query["teaching_staff_id"] = teaching_staff_id
+    if status:
+        query["status"] = status
+    
+    requests = await db.course_requests.find(query).to_list(1000)
+    return [CourseRequest(**req) for req in requests]
+
+@api_router.put("/course-requests/{request_id}", response_model=CourseRequest)
+async def update_course_request(request_id: str, update: CourseRequestUpdate):
+    """Update course request status (for Chair/Secretary)"""
+    
+    request_doc = await db.course_requests.find_one({"id": request_id})
+    if not request_doc:
+        raise HTTPException(status_code=404, detail="Course request not found")
+    
+    # If approving the request, assign the course
+    if update.status == "approved":
+        course = await db.courses.find_one({"id": request_doc["course_id"]})
+        if course and course.get("teaching_staff_id"):
+            raise HTTPException(status_code=400, detail="Course is already assigned to another staff member")
+        
+        # Check for time conflicts
+        if course and course.get("schedule_day") and course.get("schedule_time"):
+            conflicts = await check_time_conflicts(
+                request_doc["teaching_staff_id"], 
+                course["schedule_day"], 
+                course["schedule_time"]
+            )
+            if conflicts:
+                conflict_names = [f"{c['code']} - {c['name']}" for c in conflicts]
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Cannot approve: Time conflict with existing courses: {', '.join(conflict_names)}"
+                )
+        
+        # Assign the course
+        await db.courses.update_one(
+            {"id": request_doc["course_id"]},
+            {"$set": {"teaching_staff_id": request_doc["teaching_staff_id"], "updated_at": datetime.utcnow()}}
+        )
+    
+    # Update request status
+    update_data = update.dict()
+    update_data["updated_at"] = datetime.utcnow()
+    
+    result = await db.course_requests.update_one(
+        {"id": request_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Course request not found")
+    
+    updated_request = await db.course_requests.find_one({"id": request_id})
+    return CourseRequest(**updated_request)
+
+@api_router.get("/staff/{staff_id}/courses", response_model=List[Course])
+async def get_staff_courses(staff_id: str):
+    """Get all courses assigned to a specific teaching staff member"""
+    
+    # Verify staff exists
+    staff = await db.teaching_staff.find_one({"id": staff_id})
+    if not staff:
+        raise HTTPException(status_code=404, detail="Teaching staff member not found")
+    
+    courses = await db.courses.find({"teaching_staff_id": staff_id}).to_list(1000)
+    return [Course(**course) for course in courses]
+
+@api_router.get("/departments/{department_id}/unassigned-courses", response_model=List[Course])
+async def get_unassigned_courses_by_department(department_id: str):
+    """Get all unassigned courses in a department"""
+    
+    # Verify department exists
+    department = await db.departments.find_one({"id": department_id})
+    if not department:
+        raise HTTPException(status_code=404, detail="Department not found")
+    
+    courses = await db.courses.find({
+        "department_id": department_id,
+        "$or": [
+            {"teaching_staff_id": {"$exists": False}},
+            {"teaching_staff_id": None}
+        ]
+    }).to_list(1000)
+    
+    return [Course(**course) for course in courses]
+
 # Include the router in the main app
 app.include_router(api_router)
 
