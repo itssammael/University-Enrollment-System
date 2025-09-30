@@ -52,16 +52,32 @@ const App = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
   const [showGradeModal, setShowGradeModal] = useState(false);
+  const [showAddDepartmentModal, setShowAddDepartmentModal] = useState(false);
+  const [showEditDepartmentModal, setShowEditDepartmentModal] = useState(false);
+  const [showAddTeachingStaffModal, setShowAddTeachingStaffModal] = useState(false);
   const [selectedSection, setSelectedSection] = useState(null);
+  const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [enrollmentForm, setEnrollmentForm] = useState({ studentId: '', sectionId: '' });
   const [newStudentForm, setNewStudentForm] = useState({ name: '', departmentId: '', email: '', gpa: '' });
+  const [newDepartmentForm, setNewDepartmentForm] = useState({ name: '', chair: '' });
+  const [editDepartmentForm, setEditDepartmentForm] = useState({ name: '', chair: '' });
+  const [newTeachingStaffForm, setNewTeachingStaffForm] = useState({ name: '', email: '', departmentId: '', specialization: '' });
   
-  // Mock Data
-  const [departments] = useState([
+  // Data state - using state instead of const for dynamic updates
+  const [departments, setDepartments] = useState([
     { id: 'D001', name: 'Computer Science', chair: 'Dr. Smith' },
     { id: 'D002', name: 'Mathematics', chair: 'Dr. Johnson' },
     { id: 'D003', name: 'Physics', chair: 'Dr. Brown' },
     { id: 'D004', name: 'Chemistry', chair: 'Dr. Davis' }
+  ]);
+
+  const [teachingStaff, setTeachingStaff] = useState([
+    { id: 'TS001', name: 'Prof. Adams', email: 'adams@university.edu', departmentId: 'D001', specialization: 'Algorithms' },
+    { id: 'TS002', name: 'Prof. Baker', email: 'baker@university.edu', departmentId: 'D001', specialization: 'Machine Learning' },
+    { id: 'TS003', name: 'Prof. Clark', email: 'clark@university.edu', departmentId: 'D001', specialization: 'Data Structures' },
+    { id: 'TS004', name: 'Prof. Davis', email: 'davis@university.edu', departmentId: 'D002', specialization: 'Calculus' },
+    { id: 'TS005', name: 'Prof. Evans', email: 'evans@university.edu', departmentId: 'D003', specialization: 'Physics' },
+    { id: 'TS006', name: 'Prof. Foster', email: 'foster@university.edu', departmentId: 'D004', specialization: 'Chemistry' }
   ]);
 
   const [students, setStudents] = useState([
