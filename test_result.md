@@ -106,16 +106,31 @@ user_problem_statement: "Make a menu button for departments, a view that lists a
 
 backend:
   - task: "Teaching Staff API endpoints"
-    implemented: false
-    working: "NA"
+    implemented: true
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Need to create teaching staff data model and CRUD endpoints"
+      - working: true
+        agent: "main"
+        comment: "Implemented comprehensive teaching staff CRUD endpoints with department validation"
+
+  - task: "Course Assignment API endpoints"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added course assignment endpoints with time conflict detection, department restrictions, and course request system for teaching staff"
 
   - task: "Department management API endpoints" 
     implemented: false
