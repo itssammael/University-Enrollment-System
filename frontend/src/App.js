@@ -1234,6 +1234,9 @@ const App = () => {
       {/* Modals */}
       <AddStudentModal />
       <GradeModal />
+      <AddDepartmentModal />
+      <EditDepartmentModal />
+      <AddTeachingStaffModal />
     </div>
   );
 };
