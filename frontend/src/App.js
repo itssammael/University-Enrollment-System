@@ -31,7 +31,9 @@ import {
   Settings,
   LogOut,
   Home,
-  UserCheck
+  UserCheck,
+  Building,
+  Trash2
 } from 'lucide-react';
 
 const App = () => {
