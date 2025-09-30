@@ -204,9 +204,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Fix input boxes glitch"
-    - "Department management API endpoints"
-    - "Department management UI"
+    - "Course Assignment API endpoints"
+    - "Course Assignment UI for Chair/Secretary" 
+    - "Teaching Staff Course Management UI"
+    - "Course Request Management for Chair/Secretary"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -214,3 +215,5 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Fixed critical input box glitch by memoizing themeClasses. Now implementing department management system with role-based permissions as per user requirements."
+  - agent: "main"
+    message: "Implemented comprehensive course assignment system: Backend APIs with time conflict detection, department restrictions, and course request workflow. Frontend includes course assignment for Chair/Secretary roles and course request management for Teaching Staff. All functionality includes proper validation and user feedback."
