@@ -302,15 +302,27 @@ const App = () => {
   const totalCourses = courses.length;
 
   // Navigation based on role
-  const getNavigationItems = () => {
-    const baseItems = [];
-    
+  const getNavigationItems = () => {    
     if (userRole === 'Admin') {
       return [
         { path: '/', label: 'Dashboard', icon: Home },
+        { path: '/departments', label: 'Department Management', icon: Building },
         { path: '/students', label: 'Student Management', icon: Users },
         { path: '/sections', label: 'Course Catalog & Grading', icon: BookOpen },
         { path: '/enrollment', label: 'Enrollment Workflow', icon: UserCheck }
+      ];
+    } else if (userRole === 'Chair' || userRole === 'Secretary') {
+      return [
+        { path: '/', label: 'Dashboard', icon: Home },
+        { path: '/departments', label: 'Department Management', icon: Building },
+        { path: '/students', label: 'Student Management', icon: Users },
+        { path: '/sections', label: 'Course Catalog & Grading', icon: BookOpen },
+        { path: '/enrollment', label: 'Enrollment Workflow', icon: UserCheck }
+      ];
+    } else if (userRole === 'Teaching Staff') {
+      return [
+        { path: '/', label: 'Dashboard', icon: Home },
+        { path: '/my-courses', label: 'My Courses', icon: BookOpen }
       ];
     } else if (userRole === 'Student') {
       return [
@@ -318,7 +330,7 @@ const App = () => {
       ];
     }
     
-    return baseItems;
+    return [];
   };
 
   // Check for existing token on mount
