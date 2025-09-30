@@ -1041,6 +1041,121 @@ const App = () => {
     );
   };
 
+  // My Courses Component (for Teaching Staff)
+  const MyCourses = () => {
+    const currentStaffId = getCurrentStaffId();
+    const myCourses = getStaffCourses(currentStaffId || '');
+    const availableCourses = getUnassignedCoursesByDepartment(currentUserDepartment);
+    const myRequests = courseRequests.filter(r => r.teaching_staff_id === currentStaffId);
+
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className={`text-3xl font-bold ${themeClasses.text}`}>My Courses</h1>
+          <button
+            onClick={() => setShowCourseRequestModal(true)}
+            className={`flex items-center px-4 py-2 rounded-lg text-white ${themeClasses.accentBg}`}
+            data-testid="request-course-button"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Request Course
+          </button>
+        </div>
+
+        {/* My Assigned Courses */}
+        <div className={`rounded-lg shadow ${themeClasses.cardBg}`}>
+          <div className="p-6">
+            <h2 className={`text-xl font-semibold mb-4 ${themeClasses.text}`}>Assigned Courses</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                <tr>
+                  <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Course Code</th>
+                  <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Course Name</th>
+                  <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Credits</th>
+                  <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Schedule</th>
+                  <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Room</th>
+                  <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Semester</th>
+                </tr>
+              </thead>
+              <tbody className={`divide-y ${themeClasses.border}`}>
+                {myCourses.length > 0 ? myCourses.map((course) => (
+                  <tr key={course.id} data-testid={`my-course-row-${course.id}`}>
+                    <td className={`px-6 py-4 whitespace-nowrap font-medium ${themeClasses.text}`}>{course.code}</td>
+                    <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.text}`}>{course.name}</td>
+                    <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>{course.credits}</td>
+                    <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>{course.schedule_day} {course.schedule_time}</td>
+                    <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>{course.room}</td>
+                    <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>{course.semester}</td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan="6" className={`px-6 py-8 text-center ${themeClasses.textSecondary}`}>
+                      No courses assigned yet. Request a course to get started!
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* My Course Requests */}
+        <div className={`rounded-lg shadow ${themeClasses.cardBg}`}>
+          <div className="p-6">
+            <h2 className={`text-xl font-semibold mb-4 ${themeClasses.text}`}>My Course Requests</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                <tr>
+                  <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Course Code</th>
+                  <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Course Name</th>
+                  <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Request Date</th>
+                  <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Status</th>
+                  <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Notes</th>
+                </tr>
+              </thead>
+              <tbody className={`divide-y ${themeClasses.border}`}>
+                {myRequests.length > 0 ? myRequests.map((request) => {
+                  const course = courses.find(c => c.id === request.course_id);
+                  return (
+                    <tr key={request.id} data-testid={`request-row-${request.id}`}>
+                      <td className={`px-6 py-4 whitespace-nowrap font-medium ${themeClasses.text}`}>{course?.code}</td>
+                      <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.text}`}>{course?.name}</td>
+                      <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>
+                        {new Date(request.request_date).toLocaleDateString()}
+                      </td>
+                      <td className={`px-6 py-4 whitespace-nowrap`}>
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          request.status === 'approved' 
+                            ? 'bg-green-100 text-green-800' 
+                            : request.status === 'rejected'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>{request.notes || '-'}</td>
+                    </tr>
+                  );
+                }) : (
+                  <tr>
+                    <td colSpan="5" className={`px-6 py-8 text-center ${themeClasses.textSecondary}`}>
+                      No course requests yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Department Management Component
   const DepartmentManagement = () => (
     <div className="space-y-6">
