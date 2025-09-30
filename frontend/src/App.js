@@ -308,10 +308,12 @@ const App = () => {
     const token = localStorage.getItem('token');
     if (token) {
       try {
-        const decoded = jwt.decode(token);
-        if (decoded && decoded.exp > Date.now() / 1000) {
+        const decoded = JSON.parse(token);
+        if (decoded && decoded.exp > Date.now()) {
           setIsAuthenticated(true);
           setUserRole(decoded.role);
+        } else {
+          localStorage.removeItem('token');
         }
       } catch (error) {
         localStorage.removeItem('token');
