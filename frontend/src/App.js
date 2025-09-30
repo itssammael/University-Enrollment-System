@@ -1134,6 +1134,7 @@ const App = () => {
   const renderCurrentModule = () => {
     switch (activeModule) {
       case '/': return <Dashboard />;
+      case '/departments': return <DepartmentManagement />;
       case '/students': return <StudentManagement />;
       case '/sections': return <CourseCatalogGrading />;
       case '/enrollment': return <EnrollmentWorkflow />;
