@@ -92,12 +92,12 @@ class CourseCreate(BaseModel):
     name: str
     credits: int
     department_id: str
-    teaching_staff_id: str = None
-    schedule_day: str = None
-    schedule_time: str = None
-    room: str = None
+    teaching_staff_id: Optional[str] = None
+    schedule_day: Optional[str] = None
+    schedule_time: Optional[str] = None
+    room: Optional[str] = None
     capacity: int = 30
-    semester: str = None
+    semester: Optional[str] = None
 
 class CourseUpdate(BaseModel):
     code: str = None
