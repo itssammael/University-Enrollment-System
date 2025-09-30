@@ -845,6 +845,119 @@ const App = () => {
     );
   };
 
+  // Department Management Component
+  const DepartmentManagement = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className={`text-3xl font-bold ${themeClasses.text}`}>Department Management</h1>
+        {userRole === 'Admin' && (
+          <button
+            onClick={() => setShowAddDepartmentModal(true)}
+            className={`flex items-center px-4 py-2 rounded-lg text-white ${themeClasses.accentBg}`}
+            data-testid="add-department-button"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Department
+          </button>
+        )}
+      </div>
+      
+      {/* Department List */}
+      <div className={`overflow-x-auto rounded-lg shadow ${themeClasses.cardBg}`}>
+        <table className="min-w-full">
+          <thead className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+            <tr>
+              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Name</th>
+              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Chair</th>
+              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Teaching Staff</th>
+              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Actions</th>
+            </tr>
+          </thead>
+          <tbody className={`divide-y ${themeClasses.border}`}>
+            {departments.map((department) => {
+              const departmentStaff = getTeachingStaffByDepartment(department.id);
+              return (
+                <tr key={department.id} data-testid={`department-row-${department.id}`}>
+                  <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.text} font-medium`}>{department.name}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>{department.chair}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.text}`}>{departmentStaff.length} staff</td>
+                  <td className={`px-6 py-4 whitespace-nowrap flex space-x-2`}>
+                    {(userRole === 'Chair' || userRole === 'Secretary') && (
+                      <button
+                        onClick={() => {
+                          setNewTeachingStaffForm({...newTeachingStaffForm, departmentId: department.id});
+                          setShowAddTeachingStaffModal(true);
+                        }}
+                        className={`flex items-center px-3 py-1 text-sm rounded text-white bg-green-600 hover:bg-green-700`}
+                        data-testid={`add-staff-${department.id}`}
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add Staff
+                      </button>
+                    )}
+                    {userRole === 'Admin' && (
+                      <>
+                        <button
+                          onClick={() => {
+                            setSelectedDepartment(department);
+                            setEditDepartmentForm({ name: department.name, chair: department.chair });
+                            setShowEditDepartmentModal(true);
+                          }}
+                          className={`flex items-center px-3 py-1 text-sm rounded text-white ${themeClasses.accentBg}`}
+                          data-testid={`edit-department-${department.id}`}
+                        >
+                          <Edit className="h-3 w-3 mr-1" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteDepartment(department.id)}
+                          className={`flex items-center px-3 py-1 text-sm rounded text-white bg-red-600 hover:bg-red-700`}
+                          data-testid={`delete-department-${department.id}`}
+                        >
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Teaching Staff Section */}
+      <div className={`rounded-lg shadow ${themeClasses.cardBg}`}>
+        <div className="p-6">
+          <h2 className={`text-xl font-semibold mb-4 ${themeClasses.text}`}>Teaching Staff</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <thead className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+              <tr>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Name</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Email</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Department</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Specialization</th>
+              </tr>
+            </thead>
+            <tbody className={`divide-y ${themeClasses.border}`}>
+              {teachingStaff.map((staff) => (
+                <tr key={staff.id} data-testid={`staff-row-${staff.id}`}>
+                  <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.text} font-medium`}>{staff.name}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>{staff.email}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>{getDepartmentName(staff.departmentId)}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>{staff.specialization}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+
   // Add Student Modal
   const AddStudentModal = () => {
     if (!showAddStudentModal) return null;
