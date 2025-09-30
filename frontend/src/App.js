@@ -1130,6 +1130,229 @@ const App = () => {
     );
   };
 
+  // Add Department Modal
+  const AddDepartmentModal = () => {
+    if (!showAddDepartmentModal) return null;
+    
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className={`max-w-md w-full mx-4 p-6 rounded-lg shadow-lg ${themeClasses.cardBg}`} data-testid="add-department-modal">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className={`text-xl font-semibold ${themeClasses.text}`}>Add New Department</h2>
+            <button
+              onClick={() => setShowAddDepartmentModal(false)}
+              className={`${themeClasses.textSecondary} hover:${themeClasses.text}`}
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          
+          <form onSubmit={addDepartment} className="space-y-4">
+            <div>
+              <label className={`block text-sm font-medium ${themeClasses.text}`}>Department Name</label>
+              <input
+                type="text"
+                required
+                className={`mt-1 block w-full px-3 py-2 border rounded-md ${themeClasses.input}`}
+                value={newDepartmentForm.name}
+                onChange={(e) => setNewDepartmentForm({...newDepartmentForm, name: e.target.value})}
+                data-testid="new-department-name-input"
+              />
+            </div>
+            
+            <div>
+              <label className={`block text-sm font-medium ${themeClasses.text}`}>Department Chair</label>
+              <input
+                type="text"
+                required
+                className={`mt-1 block w-full px-3 py-2 border rounded-md ${themeClasses.input}`}
+                value={newDepartmentForm.chair}
+                onChange={(e) => setNewDepartmentForm({...newDepartmentForm, chair: e.target.value})}
+                data-testid="new-department-chair-input"
+              />
+            </div>
+            
+            <div className="flex space-x-3">
+              <button
+                type="submit"
+                className={`flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-white ${themeClasses.accentBg}`}
+                data-testid="add-department-submit-button"
+              >
+                Add Department
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAddDepartmentModal(false)}
+                className={`flex-1 py-2 px-4 border rounded-md ${themeClasses.border} ${themeClasses.text}`}
+                data-testid="add-department-cancel-button"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
+  // Edit Department Modal
+  const EditDepartmentModal = () => {
+    if (!showEditDepartmentModal || !selectedDepartment) return null;
+    
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className={`max-w-md w-full mx-4 p-6 rounded-lg shadow-lg ${themeClasses.cardBg}`} data-testid="edit-department-modal">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className={`text-xl font-semibold ${themeClasses.text}`}>Edit Department</h2>
+            <button
+              onClick={() => setShowEditDepartmentModal(false)}
+              className={`${themeClasses.textSecondary} hover:${themeClasses.text}`}
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          
+          <form onSubmit={updateDepartment} className="space-y-4">
+            <div>
+              <label className={`block text-sm font-medium ${themeClasses.text}`}>Department Name</label>
+              <input
+                type="text"
+                required
+                className={`mt-1 block w-full px-3 py-2 border rounded-md ${themeClasses.input}`}
+                value={editDepartmentForm.name}
+                onChange={(e) => setEditDepartmentForm({...editDepartmentForm, name: e.target.value})}
+                data-testid="edit-department-name-input"
+              />
+            </div>
+            
+            <div>
+              <label className={`block text-sm font-medium ${themeClasses.text}`}>Department Chair</label>
+              <input
+                type="text"
+                required
+                className={`mt-1 block w-full px-3 py-2 border rounded-md ${themeClasses.input}`}
+                value={editDepartmentForm.chair}
+                onChange={(e) => setEditDepartmentForm({...editDepartmentForm, chair: e.target.value})}
+                data-testid="edit-department-chair-input"
+              />
+            </div>
+            
+            <div className="flex space-x-3">
+              <button
+                type="submit"
+                className={`flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-white ${themeClasses.accentBg}`}
+                data-testid="edit-department-submit-button"
+              >
+                Update Department
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowEditDepartmentModal(false)}
+                className={`flex-1 py-2 px-4 border rounded-md ${themeClasses.border} ${themeClasses.text}`}
+                data-testid="edit-department-cancel-button"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
+  // Add Teaching Staff Modal
+  const AddTeachingStaffModal = () => {
+    if (!showAddTeachingStaffModal) return null;
+    
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className={`max-w-md w-full mx-4 p-6 rounded-lg shadow-lg ${themeClasses.cardBg}`} data-testid="add-teaching-staff-modal">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className={`text-xl font-semibold ${themeClasses.text}`}>Add Teaching Staff</h2>
+            <button
+              onClick={() => setShowAddTeachingStaffModal(false)}
+              className={`${themeClasses.textSecondary} hover:${themeClasses.text}`}
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          
+          <form onSubmit={addTeachingStaff} className="space-y-4">
+            <div>
+              <label className={`block text-sm font-medium ${themeClasses.text}`}>Name</label>
+              <input
+                type="text"
+                required
+                className={`mt-1 block w-full px-3 py-2 border rounded-md ${themeClasses.input}`}
+                value={newTeachingStaffForm.name}
+                onChange={(e) => setNewTeachingStaffForm({...newTeachingStaffForm, name: e.target.value})}
+                data-testid="new-staff-name-input"
+              />
+            </div>
+            
+            <div>
+              <label className={`block text-sm font-medium ${themeClasses.text}`}>Email</label>
+              <input
+                type="email"
+                required
+                className={`mt-1 block w-full px-3 py-2 border rounded-md ${themeClasses.input}`}
+                value={newTeachingStaffForm.email}
+                onChange={(e) => setNewTeachingStaffForm({...newTeachingStaffForm, email: e.target.value})}
+                data-testid="new-staff-email-input"
+              />
+            </div>
+            
+            <div>
+              <label className={`block text-sm font-medium ${themeClasses.text}`}>Department</label>
+              <select
+                required
+                className={`mt-1 block w-full px-3 py-2 border rounded-md ${themeClasses.input}`}
+                value={newTeachingStaffForm.departmentId}
+                onChange={(e) => setNewTeachingStaffForm({...newTeachingStaffForm, departmentId: e.target.value})}
+                data-testid="new-staff-department-select"
+              >
+                <option value="">Select Department...</option>
+                {departments.map(dept => (
+                  <option key={dept.id} value={dept.id}>{dept.name}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className={`block text-sm font-medium ${themeClasses.text}`}>Specialization</label>
+              <input
+                type="text"
+                required
+                className={`mt-1 block w-full px-3 py-2 border rounded-md ${themeClasses.input}`}
+                value={newTeachingStaffForm.specialization}
+                onChange={(e) => setNewTeachingStaffForm({...newTeachingStaffForm, specialization: e.target.value})}
+                data-testid="new-staff-specialization-input"
+              />
+            </div>
+            
+            <div className="flex space-x-3">
+              <button
+                type="submit"
+                className={`flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-white ${themeClasses.accentBg}`}
+                data-testid="add-staff-submit-button"
+              >
+                Add Staff
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAddTeachingStaffModal(false)}
+                className={`flex-1 py-2 px-4 border rounded-md ${themeClasses.border} ${themeClasses.text}`}
+                data-testid="add-staff-cancel-button"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
   // Render current module
   const renderCurrentModule = () => {
     switch (activeModule) {
