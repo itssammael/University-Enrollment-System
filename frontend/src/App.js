@@ -569,7 +569,7 @@ const App = () => {
         { path: '/', label: 'Dashboard', icon: Home },
         { path: '/departments', label: 'Department Management', icon: Building },
         { path: '/students', label: 'Student Management', icon: Users },
-        { path: '/sections', label: 'Course Catalog & Grading', icon: BookOpen },
+        { path: '/sections', label: 'Course Catalog', icon: BookOpen },
         { path: '/enrollment', label: 'Enrollment Workflow', icon: UserCheck }
       ];
     } else if (userRole === 'Chair' || userRole === 'Secretary') {
@@ -577,7 +577,7 @@ const App = () => {
         { path: '/', label: 'Dashboard', icon: Home },
         { path: '/departments', label: 'Department Management', icon: Building },
         { path: '/students', label: 'Student Management', icon: Users },
-        { path: '/sections', label: 'Course Catalog & Grading', icon: BookOpen },
+        { path: '/sections', label: 'Course Catalog', icon: BookOpen },
         { path: '/enrollment', label: 'Enrollment Workflow', icon: UserCheck }
       ];
     } else if (userRole === 'Teaching Staff') {
