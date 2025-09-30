@@ -13,7 +13,8 @@ import {
   Tooltip,
   ResponsiveContainer
 } from 'recharts';
-import jwt from 'jsonwebtoken';
+// JWT library removed to avoid webpack polyfill issues
+// Using simple mock authentication instead
 import {
   BookOpen,
   Users,
