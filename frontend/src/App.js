@@ -2109,6 +2109,8 @@ const App = () => {
       <AddDepartmentModal />
       <EditDepartmentModal />
       <AddTeachingStaffModal />
+      <CourseAssignmentModal />
+      <CourseRequestModal />
     </div>
   );
 };
