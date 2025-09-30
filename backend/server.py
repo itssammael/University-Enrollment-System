@@ -128,6 +128,185 @@ async def get_status_checks():
     status_checks = await db.status_checks.find().to_list(1000)
     return [StatusCheck(**status_check) for status_check in status_checks]
 
+# Department endpoints
+@api_router.post("/departments", response_model=Department)
+async def create_department(department: DepartmentCreate):
+    department_dict = department.dict()
+    department_obj = Department(**department_dict)
+    await db.departments.insert_one(department_obj.dict())
+    return department_obj
+
+@api_router.get("/departments", response_model=List[Department])
+async def get_departments():
+    departments = await db.departments.find().to_list(1000)
+    return [Department(**dept) for dept in departments]
+
+@api_router.get("/departments/{department_id}", response_model=Department)
+async def get_department(department_id: str):
+    department = await db.departments.find_one({"id": department_id})
+    if not department:
+        raise HTTPException(status_code=404, detail="Department not found")
+    return Department(**department)
+
+@api_router.put("/departments/{department_id}", response_model=Department)
+async def update_department(department_id: str, department_update: DepartmentUpdate):
+    update_data = {k: v for k, v in department_update.dict().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    update_data["updated_at"] = datetime.utcnow()
+    
+    result = await db.departments.update_one(
+        {"id": department_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Department not found")
+    
+    updated_department = await db.departments.find_one({"id": department_id})
+    return Department(**updated_department)
+
+@api_router.delete("/departments/{department_id}")
+async def delete_department(department_id: str):
+    # Check if there are teaching staff in this department
+    staff_count = await db.teaching_staff.count_documents({"department_id": department_id})
+    if staff_count > 0:
+        raise HTTPException(status_code=400, detail="Cannot delete department with existing teaching staff")
+    
+    result = await db.departments.delete_one({"id": department_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Department not found")
+    
+    return {"message": "Department deleted successfully"}
+
+# Teaching Staff endpoints
+@api_router.post("/teaching-staff", response_model=TeachingStaff)
+async def create_teaching_staff(staff: TeachingStaffCreate):
+    # Verify department exists
+    department = await db.departments.find_one({"id": staff.department_id})
+    if not department:
+        raise HTTPException(status_code=400, detail="Department not found")
+    
+    staff_dict = staff.dict()
+    staff_obj = TeachingStaff(**staff_dict)
+    await db.teaching_staff.insert_one(staff_obj.dict())
+    return staff_obj
+
+@api_router.get("/teaching-staff", response_model=List[TeachingStaff])
+async def get_teaching_staff(department_id: str = None):
+    if department_id:
+        staff_list = await db.teaching_staff.find({"department_id": department_id}).to_list(1000)
+    else:
+        staff_list = await db.teaching_staff.find().to_list(1000)
+    return [TeachingStaff(**staff) for staff in staff_list]
+
+@api_router.get("/teaching-staff/{staff_id}", response_model=TeachingStaff)
+async def get_teaching_staff_member(staff_id: str):
+    staff = await db.teaching_staff.find_one({"id": staff_id})
+    if not staff:
+        raise HTTPException(status_code=404, detail="Teaching staff member not found")
+    return TeachingStaff(**staff)
+
+@api_router.put("/teaching-staff/{staff_id}", response_model=TeachingStaff)
+async def update_teaching_staff(staff_id: str, staff_update: TeachingStaffUpdate):
+    update_data = {k: v for k, v in staff_update.dict().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    # Verify department exists if department_id is being updated
+    if "department_id" in update_data:
+        department = await db.departments.find_one({"id": update_data["department_id"]})
+        if not department:
+            raise HTTPException(status_code=400, detail="Department not found")
+    
+    update_data["updated_at"] = datetime.utcnow()
+    
+    result = await db.teaching_staff.update_one(
+        {"id": staff_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Teaching staff member not found")
+    
+    updated_staff = await db.teaching_staff.find_one({"id": staff_id})
+    return TeachingStaff(**updated_staff)
+
+@api_router.delete("/teaching-staff/{staff_id}")
+async def delete_teaching_staff(staff_id: str):
+    # Check if staff has assigned courses
+    course_count = await db.courses.count_documents({"teaching_staff_id": staff_id})
+    if course_count > 0:
+        raise HTTPException(status_code=400, detail="Cannot delete teaching staff with assigned courses")
+    
+    result = await db.teaching_staff.delete_one({"id": staff_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Teaching staff member not found")
+    
+    return {"message": "Teaching staff member deleted successfully"}
+
+# Course endpoints
+@api_router.post("/courses", response_model=Course)
+async def create_course(course: CourseCreate):
+    # Verify department exists
+    department = await db.departments.find_one({"id": course.department_id})
+    if not department:
+        raise HTTPException(status_code=400, detail="Department not found")
+    
+    # Verify teaching staff exists if provided
+    if course.teaching_staff_id:
+        staff = await db.teaching_staff.find_one({"id": course.teaching_staff_id})
+        if not staff:
+            raise HTTPException(status_code=400, detail="Teaching staff member not found")
+    
+    course_dict = course.dict()
+    course_obj = Course(**course_dict)
+    await db.courses.insert_one(course_obj.dict())
+    return course_obj
+
+@api_router.get("/courses", response_model=List[Course])
+async def get_courses(department_id: str = None, teaching_staff_id: str = None):
+    query = {}
+    if department_id:
+        query["department_id"] = department_id
+    if teaching_staff_id:
+        query["teaching_staff_id"] = teaching_staff_id
+    
+    courses = await db.courses.find(query).to_list(1000)
+    return [Course(**course) for course in courses]
+
+@api_router.put("/courses/{course_id}", response_model=Course)
+async def update_course(course_id: str, course_update: CourseUpdate):
+    update_data = {k: v for k, v in course_update.dict().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    # Verify department exists if department_id is being updated
+    if "department_id" in update_data:
+        department = await db.departments.find_one({"id": update_data["department_id"]})
+        if not department:
+            raise HTTPException(status_code=400, detail="Department not found")
+    
+    # Verify teaching staff exists if teaching_staff_id is being updated
+    if "teaching_staff_id" in update_data:
+        staff = await db.teaching_staff.find_one({"id": update_data["teaching_staff_id"]})
+        if not staff:
+            raise HTTPException(status_code=400, detail="Teaching staff member not found")
+    
+    update_data["updated_at"] = datetime.utcnow()
+    
+    result = await db.courses.update_one(
+        {"id": course_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Course not found")
+    
+    updated_course = await db.courses.find_one({"id": course_id})
+    return Course(**updated_course)
+
 # Include the router in the main app
 app.include_router(api_router)
 
