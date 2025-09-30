@@ -69,6 +69,18 @@ const App = () => {
   const [editDepartmentForm, setEditDepartmentForm] = useState({ name: '', chair: '' });
   const [newTeachingStaffForm, setNewTeachingStaffForm] = useState({ name: '', email: '', departmentId: '', specialization: '' });
   
+  // Course Assignment state
+  const [showCourseAssignmentModal, setShowCourseAssignmentModal] = useState(false);
+  const [showCourseRequestModal, setShowCourseRequestModal] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedStaff, setSelectedStaff] = useState(null);
+  const [courseRequests, setCourseRequests] = useState([]);
+  const [staffCourses, setStaffCourses] = useState([]);
+  const [unassignedCourses, setUnassignedCourses] = useState([]);
+  const [currentUserDepartment, setCurrentUserDepartment] = useState('D001'); // Mock department for current user
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
   // Data state - using state instead of const for dynamic updates
   const [departments, setDepartments] = useState([
     { id: 'D001', name: 'Computer Science', chair: 'Dr. Smith' },
