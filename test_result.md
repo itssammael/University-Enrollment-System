@@ -101,3 +101,86 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Make a menu button for departments, a view that lists all departments, also where users can add a new department and manage the teaching staff for and the courses they offer. Fix the input boxes glitch, I cannot type a complete word"
+
+backend:
+  - task: "Teaching Staff API endpoints"
+    implemented: false
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Need to create teaching staff data model and CRUD endpoints"
+
+  - task: "Department management API endpoints" 
+    implemented: false
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Need to create department CRUD endpoints with proper permissions"
+
+frontend:
+  - task: "Fix input boxes glitch"
+    implemented: true
+    working: "NA"
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main" 
+        comment: "Fixed themeClasses memoization issue that was causing input focus loss on every keystroke"
+
+  - task: "Department management UI"
+    implemented: false
+    working: "NA"
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Need to create department list view, add/edit forms with role-based permissions"
+
+  - task: "Teaching staff management UI"
+    implemented: false
+    working: "NA" 
+    file: "App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Need to create teaching staff assignment and course management interfaces"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Fix input boxes glitch"
+    - "Department management API endpoints"
+    - "Department management UI"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Fixed critical input box glitch by memoizing themeClasses. Now implementing department management system with role-based permissions as per user requirements."
