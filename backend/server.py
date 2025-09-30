@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 import uuid
 from datetime import datetime
-
+from contextlib import asynccontextmanager 
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -19,8 +19,26 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+# 1. Define the lifespan context manager
+@asynccontextmanager
+async def lifespan_handler(app: FastAPI):
+    # STARTUP LOGIC: You can add startup tasks here if needed
+    logger.info("Application starting up...")
+    
+    yield # <--- Application is now running and serving requests
+    
+    # SHUTDOWN LOGIC: This replaces @app.on_event("shutdown")
+    logger.info("Application shutting down, closing DB client...")
+    client.close() # ⬅️ Your shutdown logic moved here
+    logger.info("DB client closed.")
+
 # Create the main app without a prefix
-app = FastAPI()
+app = FastAPI(lifespan=lifespan_handler)
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -318,13 +336,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
+
+# @app.on_event("shutdown")
+# async def shutdown_db_client():
+#     client.close()
