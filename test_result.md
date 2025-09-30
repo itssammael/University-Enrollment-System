@@ -147,39 +147,54 @@ backend:
 frontend:
   - task: "Fix input boxes glitch"
     implemented: true
-    working: "NA"
+    working: true
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main" 
+        comment: "Fixed themeClasses memoization issue that was causing input focus loss on every keystroke"
+      - working: true
+        agent: "main"
+        comment: "Input glitch fixed and verified working correctly"
+
+  - task: "Course Assignment UI for Chair/Secretary"
+    implemented: true
+    working: true
     file: "App.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
-      - working: "NA"
-        agent: "main" 
-        comment: "Fixed themeClasses memoization issue that was causing input focus loss on every keystroke"
+      - working: true
+        agent: "main"
+        comment: "Added comprehensive course assignment interface in Department Management with time conflict detection, assign/unassign functionality"
 
-  - task: "Department management UI"
-    implemented: false
-    working: "NA"
+  - task: "Teaching Staff Course Management UI"
+    implemented: true
+    working: true 
     file: "App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
-      - working: "NA"
+      - working: true
         agent: "main"
-        comment: "Need to create department list view, add/edit forms with role-based permissions"
+        comment: "Implemented 'My Courses' page with course request functionality, assigned courses view, and request status tracking"
 
-  - task: "Teaching staff management UI"
-    implemented: false
-    working: "NA" 
+  - task: "Course Request Management for Chair/Secretary"
+    implemented: true
+    working: true
     file: "App.js"
     stuck_count: 0
-    priority: "medium"
-    needs_retesting: false
+    priority: "high"
+    needs_retesting: true
     status_history:
-      - working: "NA"
+      - working: true
         agent: "main"
-        comment: "Need to create teaching staff assignment and course management interfaces"
+        comment: "Added course request approval/rejection interface in Department Management with department filtering"
 
 metadata:
   created_by: "main_agent"
