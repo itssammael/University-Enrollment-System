@@ -35,6 +35,82 @@ class StatusCheck(BaseModel):
 class StatusCheckCreate(BaseModel):
     client_name: str
 
+class Department(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    chair: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class DepartmentCreate(BaseModel):
+    name: str
+    chair: str
+
+class DepartmentUpdate(BaseModel):
+    name: str = None
+    chair: str = None
+
+class TeachingStaff(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    email: str
+    department_id: str
+    specialization: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class TeachingStaffCreate(BaseModel):
+    name: str
+    email: str
+    department_id: str
+    specialization: str
+
+class TeachingStaffUpdate(BaseModel):
+    name: str = None
+    email: str = None
+    department_id: str = None
+    specialization: str = None
+
+class Course(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    code: str
+    name: str
+    credits: int
+    department_id: str
+    teaching_staff_id: str = None
+    schedule_day: str = None
+    schedule_time: str = None
+    room: str = None
+    capacity: int = 30
+    current_enrollment: int = 0
+    semester: str = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class CourseCreate(BaseModel):
+    code: str
+    name: str
+    credits: int
+    department_id: str
+    teaching_staff_id: str = None
+    schedule_day: str = None
+    schedule_time: str = None
+    room: str = None
+    capacity: int = 30
+    semester: str = None
+
+class CourseUpdate(BaseModel):
+    code: str = None
+    name: str = None
+    credits: int = None
+    department_id: str = None
+    teaching_staff_id: str = None
+    schedule_day: str = None
+    schedule_time: str = None
+    room: str = None
+    capacity: int = None
+    semester: str = None
+
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
 async def root():
