@@ -289,6 +289,71 @@ const App = () => {
     alert('Enrollment successful!');
   };
 
+  // Department Management Functions
+  const addDepartment = (e) => {
+    e.preventDefault();
+    const newId = `D${String(departments.length + 1).padStart(3, '0')}`;
+    const newDepartment = {
+      id: newId,
+      name: newDepartmentForm.name,
+      chair: newDepartmentForm.chair
+    };
+    setDepartments([...departments, newDepartment]);
+    setNewDepartmentForm({ name: '', chair: '' });
+    setShowAddDepartmentModal(false);
+  };
+
+  const updateDepartment = (e) => {
+    e.preventDefault();
+    setDepartments(departments.map(dept => 
+      dept.id === selectedDepartment.id 
+        ? { ...dept, name: editDepartmentForm.name, chair: editDepartmentForm.chair }
+        : dept
+    ));
+    setShowEditDepartmentModal(false);
+    setSelectedDepartment(null);
+    setEditDepartmentForm({ name: '', chair: '' });
+  };
+
+  const deleteDepartment = (departmentId) => {
+    // Check if department has teaching staff
+    const hasStaff = teachingStaff.some(staff => staff.departmentId === departmentId);
+    if (hasStaff) {
+      alert('Cannot delete department with existing teaching staff!');
+      return;
+    }
+
+    // Check if department has students
+    const hasStudents = students.some(student => student.departmentId === departmentId);
+    if (hasStudents) {
+      alert('Cannot delete department with enrolled students!');
+      return;
+    }
+
+    if (confirm('Are you sure you want to delete this department?')) {
+      setDepartments(departments.filter(dept => dept.id !== departmentId));
+    }
+  };
+
+  const addTeachingStaff = (e) => {
+    e.preventDefault();
+    const newId = `TS${String(teachingStaff.length + 1).padStart(3, '0')}`;
+    const newStaff = {
+      id: newId,
+      name: newTeachingStaffForm.name,
+      email: newTeachingStaffForm.email,
+      departmentId: newTeachingStaffForm.departmentId,
+      specialization: newTeachingStaffForm.specialization
+    };
+    setTeachingStaff([...teachingStaff, newStaff]);
+    setNewTeachingStaffForm({ name: '', email: '', departmentId: '', specialization: '' });
+    setShowAddTeachingStaffModal(false);
+  };
+
+  const getTeachingStaffByDepartment = (departmentId) => {
+    return teachingStaff.filter(staff => staff.departmentId === departmentId);
+  };
+
   // Filter students based on search
   const filteredStudents = students.filter(student => 
     student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
