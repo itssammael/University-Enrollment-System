@@ -321,8 +321,8 @@ const App = () => {
     }
   }, []);
 
-  // Theme classes
-  const themeClasses = {
+  // Theme classes - memoized to prevent unnecessary re-renders
+  const themeClasses = useMemo(() => ({
     bg: isDarkMode ? 'bg-slate-900' : 'bg-gray-50',
     cardBg: isDarkMode ? 'bg-slate-800' : 'bg-white',
     text: isDarkMode ? 'text-slate-100' : 'text-gray-900',
@@ -331,7 +331,7 @@ const App = () => {
     accent: 'text-blue-400',
     accentBg: 'bg-blue-600 hover:bg-blue-700',
     input: isDarkMode ? 'bg-slate-700 border-slate-600 text-slate-100' : 'bg-white border-gray-300 text-gray-900'
-  };
+  }), [isDarkMode]);
 
   // Login Component
   if (!isAuthenticated) {
