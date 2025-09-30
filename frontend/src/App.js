@@ -866,58 +866,255 @@ const App = () => {
     </div>
   );
 
-  // Course Catalog & Grading Component
-  const CourseCatalogGrading = () => (
-    <div className="space-y-6">
-      <h1 className={`text-3xl font-bold ${themeClasses.text}`}>Course Catalog & Grading</h1>
+  // Course Catalog Component
+  const CourseCatalogGrading = () => {
+    const [showCreateCourseModal, setShowCreateCourseModal] = useState(false);
+    const [newCourseForm, setNewCourseForm] = useState({ 
+      code: '', 
+      name: '', 
+      credits: '', 
+      schedule_day: '', 
+      schedule_time: '', 
+      room: '', 
+      semester: 'Fall 2024' 
+    });
+
+    const handleCreateCourse = (e) => {
+      e.preventDefault();
+      const newId = `C${String(courses.length + 1).padStart(3, '0')}`;
+      const newCourse = {
+        id: newId,
+        code: newCourseForm.code,
+        name: newCourseForm.name,
+        credits: parseInt(newCourseForm.credits),
+        department_id: currentUserDepartment,
+        teaching_staff_id: null,
+        schedule_day: newCourseForm.schedule_day,
+        schedule_time: newCourseForm.schedule_time,
+        room: newCourseForm.room,
+        semester: newCourseForm.semester
+      };
       
-      {/* Section List */}
-      <div className={`overflow-x-auto rounded-lg shadow ${themeClasses.cardBg}`}>
-        <table className="min-w-full">
-          <thead className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
-            <tr>
-              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Course</th>
-              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Instructor</th>
-              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Semester</th>
-              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Room</th>
-              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Time</th>
-              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Capacity</th>
-              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Actions</th>
-            </tr>
-          </thead>
-          <tbody className={`divide-y ${themeClasses.border}`}>
-            {sections.map((section) => (
-              <tr key={section.id} data-testid={`section-row-${section.id}`}>
-                <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.text}`}>
-                  {getCourseCode(section.courseId)} - {getCourseName(section.courseId)}
-                </td>
-                <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>{section.instructor}</td>
-                <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>{section.semester}</td>
-                <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>{section.room}</td>
-                <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>{section.time}</td>
-                <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.text}`}>
-                  {section.currentEnrollment}/{section.capacity}
-                </td>
-                <td className={`px-6 py-4 whitespace-nowrap`}>
-                  <button
-                    onClick={() => {
-                      setSelectedSection(section);
-                      setShowGradeModal(true);
-                    }}
-                    className={`flex items-center px-3 py-1 text-sm rounded text-white ${themeClasses.accentBg}`}
-                    data-testid={`manage-grades-${section.id}`}
-                  >
-                    <Edit className="h-3 w-3 mr-1" />
-                    Manage Grades
-                  </button>
-                </td>
+      setCourses([...courses, newCourse]);
+      setNewCourseForm({ 
+        code: '', 
+        name: '', 
+        credits: '', 
+        schedule_day: '', 
+        schedule_time: '', 
+        room: '', 
+        semester: 'Fall 2024' 
+      });
+      setShowCreateCourseModal(false);
+      alert('Course created successfully!');
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className={`text-3xl font-bold ${themeClasses.text}`}>Course Catalog</h1>
+          {(userRole === 'Chair' || userRole === 'Secretary') && (
+            <button
+              onClick={() => setShowCreateCourseModal(true)}
+              className={`flex items-center px-4 py-2 rounded-lg text-white ${themeClasses.accentBg}`}
+              data-testid="create-course-button"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Course
+            </button>
+          )}
+        </div>
+        
+        {/* Course List */}
+        <div className={`overflow-x-auto rounded-lg shadow ${themeClasses.cardBg}`}>
+          <table className="min-w-full">
+            <thead className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+              <tr>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Course Code</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Course Name</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Credits</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Department</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Schedule</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Room</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Instructor</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${themeClasses.textSecondary}`}>Capacity</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className={`divide-y ${themeClasses.border}`}>
+              {courses.map((course) => (
+                <tr key={course.id} data-testid={`course-row-${course.id}`}>
+                  <td className={`px-6 py-4 whitespace-nowrap font-medium ${themeClasses.text}`}>{course.code}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.text}`}>{course.name}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>{course.credits}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>{getDepartmentName(course.department_id)}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>
+                    {course.schedule_day} {course.schedule_time}
+                  </td>
+                  <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>{course.room}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.textSecondary}`}>
+                    {getStaffName(course.teaching_staff_id)}
+                  </td>
+                  <td className={`px-6 py-4 whitespace-nowrap ${themeClasses.text}`}>
+                    {course.capacity || 30}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Create Course Modal */}
+        {showCreateCourseModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className={`max-w-md w-full mx-4 p-6 rounded-lg shadow-lg ${themeClasses.cardBg}`} data-testid="create-course-modal">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className={`text-xl font-semibold ${themeClasses.text}`}>Create New Course</h2>
+                <button
+                  onClick={() => setShowCreateCourseModal(false)}
+                  className={`${themeClasses.textSecondary} hover:${themeClasses.text}`}
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              
+              <form onSubmit={handleCreateCourse} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={`block text-sm font-medium ${themeClasses.text}`}>Course Code</label>
+                    <input
+                      type="text"
+                      required
+                      className={`mt-1 block w-full px-3 py-2 border rounded-md ${themeClasses.input}`}
+                      value={newCourseForm.code}
+                      onChange={(e) => setNewCourseForm({...newCourseForm, code: e.target.value})}
+                      placeholder="e.g., CS101"
+                      data-testid="new-course-code-input"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className={`block text-sm font-medium ${themeClasses.text}`}>Credits</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="6"
+                      required
+                      className={`mt-1 block w-full px-3 py-2 border rounded-md ${themeClasses.input}`}
+                      value={newCourseForm.credits}
+                      onChange={(e) => setNewCourseForm({...newCourseForm, credits: e.target.value})}
+                      data-testid="new-course-credits-input"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className={`block text-sm font-medium ${themeClasses.text}`}>Course Name</label>
+                  <input
+                    type="text"
+                    required
+                    className={`mt-1 block w-full px-3 py-2 border rounded-md ${themeClasses.input}`}
+                    value={newCourseForm.name}
+                    onChange={(e) => setNewCourseForm({...newCourseForm, name: e.target.value})}
+                    placeholder="e.g., Introduction to Programming"
+                    data-testid="new-course-name-input"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={`block text-sm font-medium ${themeClasses.text}`}>Schedule Day</label>
+                    <select
+                      required
+                      className={`mt-1 block w-full px-3 py-2 border rounded-md ${themeClasses.input}`}
+                      value={newCourseForm.schedule_day}
+                      onChange={(e) => setNewCourseForm({...newCourseForm, schedule_day: e.target.value})}
+                      data-testid="new-course-day-select"
+                    >
+                      <option value="">Select Day</option>
+                      <option value="MWF">MWF</option>
+                      <option value="TTh">TTh</option>
+                      <option value="MW">MW</option>
+                      <option value="TT">TT</option>
+                      <option value="F">F</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className={`block text-sm font-medium ${themeClasses.text}`}>Schedule Time</label>
+                    <select
+                      required
+                      className={`mt-1 block w-full px-3 py-2 border rounded-md ${themeClasses.input}`}
+                      value={newCourseForm.schedule_time}
+                      onChange={(e) => setNewCourseForm({...newCourseForm, schedule_time: e.target.value})}
+                      data-testid="new-course-time-select"
+                    >
+                      <option value="">Select Time</option>
+                      <option value="8:00 AM">8:00 AM</option>
+                      <option value="9:00 AM">9:00 AM</option>
+                      <option value="10:00 AM">10:00 AM</option>
+                      <option value="11:00 AM">11:00 AM</option>
+                      <option value="1:00 PM">1:00 PM</option>
+                      <option value="2:00 PM">2:00 PM</option>
+                      <option value="3:00 PM">3:00 PM</option>
+                      <option value="4:00 PM">4:00 PM</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={`block text-sm font-medium ${themeClasses.text}`}>Room</label>
+                    <input
+                      type="text"
+                      required
+                      className={`mt-1 block w-full px-3 py-2 border rounded-md ${themeClasses.input}`}
+                      value={newCourseForm.room}
+                      onChange={(e) => setNewCourseForm({...newCourseForm, room: e.target.value})}
+                      placeholder="e.g., A101"
+                      data-testid="new-course-room-input"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className={`block text-sm font-medium ${themeClasses.text}`}>Semester</label>
+                    <select
+                      required
+                      className={`mt-1 block w-full px-3 py-2 border rounded-md ${themeClasses.input}`}
+                      value={newCourseForm.semester}
+                      onChange={(e) => setNewCourseForm({...newCourseForm, semester: e.target.value})}
+                      data-testid="new-course-semester-select"
+                    >
+                      <option value="Fall 2024">Fall 2024</option>
+                      <option value="Spring 2025">Spring 2025</option>
+                      <option value="Summer 2025">Summer 2025</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="flex space-x-3">
+                  <button
+                    type="submit"
+                    className={`flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-white ${themeClasses.accentBg}`}
+                    data-testid="create-course-submit-button"
+                  >
+                    Create Course
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateCourseModal(false)}
+                    className={`flex-1 py-2 px-4 border rounded-md ${themeClasses.border} ${themeClasses.text}`}
+                    data-testid="create-course-cancel-button"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   // Enrollment Workflow Component
   const EnrollmentWorkflow = () => (
