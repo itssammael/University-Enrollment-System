@@ -33,8 +33,14 @@ import {
   Home,
   UserCheck,
   Building,
-  Trash2
+  Trash2,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Calendar,
+  UserPlus
 } from 'lucide-react';
+import { departmentApi, teachingStaffApi, courseApi, courseRequestApi } from './services/api';
 
 const App = () => {
   // Theme state
