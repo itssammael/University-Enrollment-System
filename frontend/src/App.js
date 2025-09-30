@@ -1812,6 +1812,195 @@ const App = () => {
     );
   };
 
+  // Course Assignment Modal (for Chair/Secretary)
+  const CourseAssignmentModal = () => {
+    if (!showCourseAssignmentModal || !selectedCourse) return null;
+    
+    const departmentStaff = getTeachingStaffByDepartment(selectedCourse.department_id);
+    
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className={`max-w-md w-full mx-4 p-6 rounded-lg shadow-lg ${themeClasses.cardBg}`} data-testid="course-assignment-modal">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className={`text-xl font-semibold ${themeClasses.text}`}>
+              Assign Course: {selectedCourse.code}
+            </h2>
+            <button
+              onClick={() => setShowCourseAssignmentModal(false)}
+              className={`${themeClasses.textSecondary} hover:${themeClasses.text}`}
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          
+          <div className="space-y-4">
+            <div>
+              <p className={`text-sm ${themeClasses.textSecondary} mb-2`}>Course Details:</p>
+              <div className={`p-3 rounded border ${themeClasses.border}`}>
+                <p className={`font-medium ${themeClasses.text}`}>{selectedCourse.name}</p>
+                <p className={`text-sm ${themeClasses.textSecondary}`}>
+                  {selectedCourse.schedule_day} {selectedCourse.schedule_time} • Room {selectedCourse.room}
+                </p>
+                <p className={`text-sm ${themeClasses.textSecondary}`}>Credits: {selectedCourse.credits}</p>
+              </div>
+            </div>
+            
+            <div>
+              <label className={`block text-sm font-medium ${themeClasses.text} mb-2`}>
+                Select Teaching Staff:
+              </label>
+              <div className="space-y-2">
+                {departmentStaff.map((staff) => {
+                  const staffCourses = getStaffCourses(staff.id);
+                  const hasConflict = staffCourses.some(c => 
+                    c.schedule_day === selectedCourse.schedule_day && 
+                    c.schedule_time === selectedCourse.schedule_time
+                  );
+                  
+                  return (
+                    <button
+                      key={staff.id}
+                      onClick={() => !hasConflict && assignCourse(selectedCourse.id, staff.id)}
+                      disabled={hasConflict}
+                      className={`w-full p-3 text-left rounded border ${
+                        hasConflict 
+                          ? `${themeClasses.border} opacity-50 cursor-not-allowed` 
+                          : `${themeClasses.border} hover:bg-blue-50 hover:border-blue-300`
+                      }`}
+                      data-testid={`assign-to-${staff.id}`}
+                    >
+                      <p className={`font-medium ${themeClasses.text}`}>{staff.name}</p>
+                      <p className={`text-sm ${themeClasses.textSecondary}`}>{staff.specialization}</p>
+                      {hasConflict && (
+                        <p className={`text-sm text-red-500`}>
+                          ⚠️ Time conflict with existing courses
+                        </p>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex justify-end mt-6">
+            <button
+              onClick={() => setShowCourseAssignmentModal(false)}
+              className={`px-4 py-2 border rounded-md ${themeClasses.border} ${themeClasses.text}`}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Course Request Modal (for Teaching Staff)
+  const CourseRequestModal = () => {
+    if (!showCourseRequestModal) return null;
+    
+    const currentStaffId = getCurrentStaffId();
+    const availableCourses = getUnassignedCoursesByDepartment(currentUserDepartment);
+    const [selectedCourseId, setSelectedCourseId] = useState('');
+    const [requestNotes, setRequestNotes] = useState('');
+    
+    const handleSubmitRequest = (e) => {
+      e.preventDefault();
+      if (selectedCourseId && currentStaffId) {
+        requestCourse(selectedCourseId, currentStaffId, requestNotes);
+        setSelectedCourseId('');
+        setRequestNotes('');
+      }
+    };
+    
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className={`max-w-md w-full mx-4 p-6 rounded-lg shadow-lg ${themeClasses.cardBg}`} data-testid="course-request-modal">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className={`text-xl font-semibold ${themeClasses.text}`}>Request Course Assignment</h2>
+            <button
+              onClick={() => setShowCourseRequestModal(false)}
+              className={`${themeClasses.textSecondary} hover:${themeClasses.text}`}
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          
+          <form onSubmit={handleSubmitRequest} className="space-y-4">
+            <div>
+              <label className={`block text-sm font-medium ${themeClasses.text}`}>Select Course</label>
+              <select
+                required
+                className={`mt-1 block w-full px-3 py-2 border rounded-md ${themeClasses.input}`}
+                value={selectedCourseId}
+                onChange={(e) => setSelectedCourseId(e.target.value)}
+                data-testid="course-request-select"
+              >
+                <option value="">Choose a course...</option>
+                {availableCourses.map(course => (
+                  <option key={course.id} value={course.id}>
+                    {course.code} - {course.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {selectedCourseId && (
+              <div>
+                <p className={`text-sm ${themeClasses.textSecondary} mb-2`}>Course Details:</p>
+                <div className={`p-3 rounded border ${themeClasses.border}`}>
+                  {(() => {
+                    const course = availableCourses.find(c => c.id === selectedCourseId);
+                    return course ? (
+                      <>
+                        <p className={`font-medium ${themeClasses.text}`}>{course.name}</p>
+                        <p className={`text-sm ${themeClasses.textSecondary}`}>
+                          {course.schedule_day} {course.schedule_time} • Room {course.room}
+                        </p>
+                        <p className={`text-sm ${themeClasses.textSecondary}`}>Credits: {course.credits}</p>
+                      </>
+                    ) : null;
+                  })()}
+                </div>
+              </div>
+            )}
+            
+            <div>
+              <label className={`block text-sm font-medium ${themeClasses.text}`}>Notes (Optional)</label>
+              <textarea
+                className={`mt-1 block w-full px-3 py-2 border rounded-md ${themeClasses.input}`}
+                rows="3"
+                value={requestNotes}
+                onChange={(e) => setRequestNotes(e.target.value)}
+                placeholder="Any additional information about your request..."
+                data-testid="course-request-notes"
+              />
+            </div>
+            
+            <div className="flex space-x-3">
+              <button
+                type="submit"
+                className={`flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-white ${themeClasses.accentBg}`}
+                data-testid="submit-course-request"
+              >
+                Submit Request
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCourseRequestModal(false)}
+                className={`flex-1 py-2 px-4 border rounded-md ${themeClasses.border} ${themeClasses.text}`}
+                data-testid="cancel-course-request"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
   // Render current module
   const renderCurrentModule = () => {
     switch (activeModule) {
