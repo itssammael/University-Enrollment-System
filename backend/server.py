@@ -129,6 +129,43 @@ class CourseUpdate(BaseModel):
     capacity: int = None
     semester: str = None
 
+class CourseAssignment(BaseModel):
+    course_id: str
+    teaching_staff_id: str
+
+class CourseRequest(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    course_id: str
+    teaching_staff_id: str
+    department_id: str
+    request_date: datetime = Field(default_factory=datetime.utcnow)
+    status: str = "pending"  # pending, approved, rejected
+    requested_by: str  # staff member name
+    notes: Optional[str] = None
+
+class CourseRequestCreate(BaseModel):
+    course_id: str
+    teaching_staff_id: str
+    notes: Optional[str] = None
+
+class CourseRequestUpdate(BaseModel):
+    status: str  # approved, rejected
+    notes: Optional[str] = None
+
+class User(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    email: str
+    role: str  # Admin, Chair, Secretary, Teaching Staff, Student
+    department_id: Optional[str] = None
+    name: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class UserCreate(BaseModel):
+    email: str
+    role: str
+    department_id: Optional[str] = None
+    name: str
+
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
 async def root():
