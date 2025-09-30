@@ -149,8 +149,9 @@ const App = () => {
   // Authentication functions
   const handleLogin = (e) => {
     e.preventDefault();
-    const token = jwt.sign({ role: userRole, email: loginForm.email }, 'secret', { expiresIn: '1h' });
-    localStorage.setItem('token', token);
+    // Mock JWT token (just a simple object for frontend-only authentication)
+    const mockToken = JSON.stringify({ role: userRole, email: loginForm.email, exp: Date.now() + 3600000 }); // 1 hour expiry
+    localStorage.setItem('token', mockToken);
     setIsAuthenticated(true);
   };
 
