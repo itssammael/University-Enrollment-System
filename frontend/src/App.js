@@ -1558,6 +1558,7 @@ const App = () => {
       case '/sections': return <CourseCatalogGrading />;
       case '/enrollment': return <EnrollmentWorkflow />;
       case '/portal': return <StudentPortal />;
+      case '/my-courses': return <MyCourses />;
       default: return <Dashboard />;
     }
   };
