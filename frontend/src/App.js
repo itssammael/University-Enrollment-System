@@ -111,12 +111,15 @@ const App = () => {
     { id: 'S010', name: 'Jack Anderson', departmentId: 'D002', gpa: 3.2, status: 'Enrolled', email: 'jack@university.edu' }
   ]);
 
-  const [courses] = useState([
-    { id: 'C001', code: 'CS101', name: 'Introduction to Programming', credits: 3, departmentId: 'D001' },
-    { id: 'C002', code: 'CS201', name: 'Data Structures', credits: 4, departmentId: 'D001' },
-    { id: 'C003', code: 'MATH101', name: 'Calculus I', credits: 4, departmentId: 'D002' },
-    { id: 'C004', code: 'PHYS101', name: 'General Physics', credits: 3, departmentId: 'D003' },
-    { id: 'C005', code: 'CHEM101', name: 'General Chemistry', credits: 3, departmentId: 'D004' }
+  const [courses, setCourses] = useState([
+    { id: 'C001', code: 'CS101', name: 'Introduction to Programming', credits: 3, departmentId: 'D001', teaching_staff_id: 'TS001', schedule_day: 'MWF', schedule_time: '10:00 AM', room: 'A101', semester: 'Fall 2024' },
+    { id: 'C002', code: 'CS201', name: 'Data Structures', credits: 4, departmentId: 'D001', teaching_staff_id: 'TS003', schedule_day: 'TTh', schedule_time: '2:00 PM', room: 'A102', semester: 'Fall 2024' },
+    { id: 'C003', code: 'CS301', name: 'Machine Learning', credits: 3, departmentId: 'D001', teaching_staff_id: null, schedule_day: 'MWF', schedule_time: '1:00 PM', room: 'A103', semester: 'Fall 2024' },
+    { id: 'C004', code: 'CS401', name: 'Advanced Algorithms', credits: 4, departmentId: 'D001', teaching_staff_id: null, schedule_day: 'TTh', schedule_time: '10:00 AM', room: 'A104', semester: 'Fall 2024' },
+    { id: 'C005', code: 'MATH101', name: 'Calculus I', credits: 4, departmentId: 'D002', teaching_staff_id: 'TS004', schedule_day: 'MWF', schedule_time: '9:00 AM', room: 'B101', semester: 'Fall 2024' },
+    { id: 'C006', code: 'MATH201', name: 'Linear Algebra', credits: 3, departmentId: 'D002', teaching_staff_id: null, schedule_day: 'TTh', schedule_time: '11:00 AM', room: 'B102', semester: 'Fall 2024' },
+    { id: 'C007', code: 'PHYS101', name: 'General Physics', credits: 3, departmentId: 'D003', teaching_staff_id: 'TS005', schedule_day: 'MWF', schedule_time: '8:00 AM', room: 'C101', semester: 'Fall 2024' },
+    { id: 'C008', code: 'CHEM101', name: 'General Chemistry', credits: 3, departmentId: 'D004', teaching_staff_id: 'TS006', schedule_day: 'TTh', schedule_time: '1:00 PM', room: 'D101', semester: 'Fall 2024' }
   ]);
 
   const [sections, setSections] = useState([
